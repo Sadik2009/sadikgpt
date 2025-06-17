@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SadikGPT ❤️ Hoor</title>
+  <style>
+    /* तुम्हारा Romantic UI यहीं होगा */
+  </style>
+</head>
+<body>
+  <!-- Interface: बोलो, Mute, Unmute -->
+  <div class="container">
+    <div class="title">SadikGPT ❤️ Hoor</div>
+    <p>अपने दिल की बात बोलो, SadikGPT सुनेगा और जवाब भी देगा! 🎤💬</p>
+    <button onclick="startListening()">🎙️ बोलो</button>
+    <button onclick="muteAudio()">🔇 Mute</button>
+    <button onclick="unmuteAudio()">🔊 Unmute</button>
+    <div class="output" id="output"></div>
+  </div>
+
+
+  <!-- JavaScript Integration -->
+  <script>
+    let isMuted = false;
+    const output = document.getElementById("output");
+
+
+    function startListening() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'hi-IN';
+      recognition.start();
+
+
+      recognition.onresult = async function(event) {
+        const transcript = event.results[0][0].transcript;
+        output.innerHTML = "आप: " + transcript;
+        const response = await getGPTResponse(transcript);
+        output.innerHTML += "<br>SadikGPT: " + response;
+        if (!isMuted) speak(response);
+      };
+    }
+
+
+    async function getGPTResponse(text) {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer YOUR_API_KEY" // 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
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "user", content: text }]
+        })
+      });
+
+
+      const data = await response.json();
+      return data.choices[0].message.content;
+    }
+
+
+    function speak(message) {
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.lang = 'hi-IN';
+      speechSynthesis.speak(utterance);
+    }
+
+
+    function muteAudio() {
+      isMuted = true;
+    }
+
+
+    function unmuteAudio() {
+      isMuted = false;
+    }
+  </script>
+</body>
+</html>
+
